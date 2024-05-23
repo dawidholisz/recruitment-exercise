@@ -47,9 +47,10 @@ const handleEditBtnClick = (noteId) => {
 const handleAddNoteSubmit = (event) => {
     event.preventDefault();
     const body = event.target.body.value;
+    const title = event.target.title.value;
     const newNote = {
         id: getNewNoteId(),
-        title: "Note Title",
+        title,
         body,
         isEditingL: false,
         date: new Date()
@@ -83,12 +84,20 @@ const renderAddNoteForm = () => {
     const bodyEl = document.createElement('div');
     bodyEl.classList.add('add-note-form__body');
 
+    const titleInput = document.createElement('input');
+    titleInput.name = 'title';
+    titleInput.id = 'add-note-title';
+    titleInput.placeholder = 'Type note title...';
+    titleInput.required = true;
+    titleInput.classList.add('add-note-form__input');
+    bodyEl.appendChild(titleInput);
+
     const textArea = document.createElement('textarea');
     textArea.name = 'body';
     textArea.id = 'add-note-input';
     textArea.placeholder = 'Type your note...';
     textArea.required = true;
-    textArea.classList.add('add-note-form__input');
+    textArea.classList.add('add-note-form__textarea');
     textArea.addEventListener('input', handleNoteBodyInputChange);
     bodyEl.appendChild(textArea);
 
@@ -147,6 +156,7 @@ const renderEmptyState = (container) => {
 const handleNoteEdit = (event, note) => {
     event.preventDefault();
     note.body = event.target.body.value;
+    note.title = event.target.title.value;
     note.isEditing = false;
     renderNotes();
 }
@@ -156,13 +166,19 @@ const renderNoteEdit = (note, container) => {
     editForm.id = 'note-edit-form';
     editForm.addEventListener('submit', (event) => handleNoteEdit(event, note));
 
+    const titleInput = document.createElement('input');
+    titleInput.name = 'title';
+    titleInput.id = 'note-edit-title';
+    titleInput.value = note.title;
+    titleInput.autofocus = true;
+    titleInput.required = true;
+    editForm.appendChild(titleInput);
+
     const textArea = document.createElement('textarea');
     textArea.name = 'body';
     textArea.id = 'note-edit-input';
     textArea.value = note.body;
     textArea.required = true;
-    textArea.autofocus = true;
-    textArea.classList.add('note-edit-form__input');
     editForm.appendChild(textArea);
 
     const saveButton = document.createElement('button');
@@ -186,38 +202,37 @@ const renderSingleNote = (note, container) => {
     const noteEl = document.createElement('div');
     noteEl.classList.add('note');
 
-    const headerEl = document.createElement('header');
-    headerEl.classList.add('note__header');
-
-    const titleEl = document.createElement('h2');
-    titleEl.classList.add('note__title');
-    titleEl.innerText = note.title;
-    headerEl.appendChild(titleEl);
-
-    const editBtn = document.createElement('button');
-    editBtn.classList.add('note__action-btn');
-    editBtn.type = 'button';
-    editBtn.addEventListener('click', () => handleEditBtnClick(note.id));
-
-    const editIcon = document.createElement('img');
-    editIcon.src = 'assets/icons/edit.svg';
-    editBtn.appendChild(editIcon);
-    headerEl.appendChild(editBtn);
-
-    const deleteBtn = document.createElement('button');
-    deleteBtn.classList.add('note__action-btn');
-    deleteBtn.type = 'button';
-    deleteBtn.addEventListener('click', () => handleNoteRemove(note.id));
-
-    const deleteIcon = document.createElement('img');
-    deleteIcon.src = 'assets/icons/delete.svg';
-    deleteBtn.appendChild(deleteIcon);
-    headerEl.appendChild(deleteBtn);
-    noteEl.appendChild(headerEl);
-
     if (note.isEditing) {
         renderNoteEdit(note, noteEl)
     } else {
+        const headerEl = document.createElement('header');
+        headerEl.classList.add('note__header');
+
+        const titleEl = document.createElement('h2');
+        titleEl.classList.add('note__title');
+        titleEl.innerText = note.title;
+        headerEl.appendChild(titleEl);
+
+        const editBtn = document.createElement('button');
+        editBtn.classList.add('note__action-btn');
+        editBtn.type = 'button';
+        editBtn.addEventListener('click', () => handleEditBtnClick(note.id));
+
+        const editIcon = document.createElement('img');
+        editIcon.src = 'assets/icons/edit.svg';
+        editBtn.appendChild(editIcon);
+        headerEl.appendChild(editBtn);
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.classList.add('note__action-btn');
+        deleteBtn.type = 'button';
+        deleteBtn.addEventListener('click', () => handleNoteRemove(note.id));
+
+        const deleteIcon = document.createElement('img');
+        deleteIcon.src = 'assets/icons/delete.svg';
+        deleteBtn.appendChild(deleteIcon);
+        headerEl.appendChild(deleteBtn);
+        noteEl.appendChild(headerEl);
         const bodyEl = document.createElement('p');
         bodyEl.classList.add('note__body');
         bodyEl.innerText = note.body;
@@ -243,7 +258,8 @@ const renderNotes = () => {
     addNewButton.addEventListener('click', handleAddNoteToggle)
 
     state.notes.filter((note) => {
-        return note.body.toLowerCase().includes(state.searchQuery.toLowerCase())
+        const searchQuery = state.searchQuery.toLowerCase();
+        return note.body.toLowerCase().includes(searchQuery) || note.title.toLowerCase().includes(searchQuery)
     }).forEach(note => renderSingleNote(note, notesContainer))
 
 }
